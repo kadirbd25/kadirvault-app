@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MediaVault — Social Video & Audio Downloader</title>
+  <title>KadirVault — Social Video & Audio Downloader</title>
   <style>
     :root {
       --bg-primary: #090b10;
@@ -358,9 +358,9 @@
   <div class="container">
     <header>
       <div class="brand">
-        <div class="logo-badge">MV</div>
+        <div class="logo-badge">KV</div>
         <div>
-          <h1>MediaVault</h1>
+          <h1>KadirVault</h1>
           <span>Instagram, Facebook & TikTok Downloader</span>
         </div>
       </div>
@@ -451,10 +451,10 @@
   <script>
     const DEFAULT_API_URL = "https://universal-social-media-downloader.onrender.com/api/download";
 
-    let apiEndpoint = localStorage.getItem("mv_api_endpoint") || DEFAULT_API_URL;
-    let demoMode = localStorage.getItem("mv_demo_mode") === "true";
+    let apiEndpoint = localStorage.getItem("kv_api_endpoint") || DEFAULT_API_URL;
+    let demoMode = localStorage.getItem("kv_demo_mode") === "true";
     let selectedType = "video";
-    let downloadHistory = JSON.parse(localStorage.getItem("mv_history") || "[]");
+    let downloadHistory = JSON.parse(localStorage.getItem("kv_history") || "[]");
 
     const urlInput = document.getElementById("urlInput");
     const pasteBtn = document.getElementById("pasteBtn");
@@ -570,7 +570,7 @@
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       });
       downloadHistory = downloadHistory.slice(0, 15);
-      localStorage.setItem("mv_history", JSON.stringify(downloadHistory));
+      localStorage.setItem("kv_history", JSON.stringify(downloadHistory));
       renderHistory();
     }
 
@@ -669,7 +669,7 @@
 
     clearHistoryBtn.addEventListener("click", function() {
       downloadHistory = [];
-      localStorage.removeItem("mv_history");
+      localStorage.removeItem("kv_history");
       renderHistory();
     });
 
@@ -692,8 +692,8 @@
       const val = apiEndpointInput.value.trim();
       apiEndpoint = val || DEFAULT_API_URL;
       demoMode = demoModeCheckbox.checked;
-      localStorage.setItem("mv_api_endpoint", apiEndpoint);
-      localStorage.setItem("mv_demo_mode", String(demoMode));
+      localStorage.setItem("kv_api_endpoint", apiEndpoint);
+      localStorage.setItem("kv_demo_mode", String(demoMode));
       settingsModal.classList.remove("open");
       pingServer();
       showStatus("Settings saved.", "success");
