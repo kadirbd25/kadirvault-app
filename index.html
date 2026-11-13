@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediaVault — Social Video & Audio Downloader</title>
+  <style>
+    :root {
+      --bg-primary: #090b10;
+      --glass-bg: rgba(20, 25, 38, 0.72);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text-primary: #f3f5f8;
+      --text-secondary: #9aa4b8;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.35);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --ig-color: #e1306c;
+      --fb-color: #1877f2;
+      --tt-color: #00f2fe;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.16), transparent 40%),
+                  radial-gradient(circle at 85% 80%, rgba(236, 72, 153, 0.12), transparent 45%),
+                  var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px 40px;
+    }
+
+    .container { width: 100%; max-width: 560px; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 24px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+
+    .logo-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .brand h1 { font-size: 20px; font-weight: 700; }
+    .brand span { font-size: 11px; color: var(--text-secondary); display: block; }
+
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+    }
+
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warning); }
+    .status-dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .status-dot.demo { background: var(--accent); }
+
+    .icon-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+      margin-bottom: 18px;
+    }
+
+    .platforms-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+
+    .platform-chip {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+    }
+
+    .platform-chip.active-ig { background: rgba(225, 48, 108, 0.15); border-color: var(--ig-color); color: #ff7ba9; }
+    .platform-chip.active-fb { background: rgba(24, 119, 242, 0.15); border-color: var(--fb-color); color: #6ba8ff; }
+    .platform-chip.active-tt { background: rgba(0, 242, 254, 0.14); border-color: var(--tt-color); color: #7ef9ff; }
+
+    .input-group { position: relative; display: flex; align-items: center; margin-bottom: 16px; }
+
+    .url-input {
+      width: 100%;
+      background: rgba(9, 11, 16, 0.85);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 15px 86px 15px 15px;
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .url-input:focus { border-color: var(--accent); }
+
+    .paste-btn {
+      position: absolute;
+      right: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 12px;
+      border-radius: 9px;
+      cursor: pointer;
+    }
+
+    .format-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: rgba(9, 11, 16, 0.7);
+      padding: 5px;
+      border-radius: 13px;
+      border: 1px solid var(--glass-border);
+      margin-bottom: 18px;
+    }
+
+    .tab-btn {
+      padding: 11px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .tab-btn.active { background: var(--accent); color: #fff; box-shadow: 0 4px 14px var(--accent-glow); }
+
+    .download-btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 8px 22px var(--accent-glow);
+    }
+
+    .download-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 13px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      display: none;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      word-break: break-word;
+    }
+
+    .status-box.show { display: block; }
+    .status-box.info { border-color: rgba(99, 102, 241, 0.45); color: #c7d2fe; }
+    .status-box.success { border-color: rgba(16, 185, 129, 0.45); color: #a7f3d0; }
+    .status-box.error { border-color: rgba(239, 68, 68, 0.45); color: #fecaca; }
+
+    .direct-link-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 9px 14px;
+      border-radius: 8px;
+      background: var(--success);
+      color: #052e16;
+      font-weight: 700;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .spinner {
+      width: 17px;
+      height: 17px;
+      border: 2.5px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .history-header h2 { font-size: 15px; font-weight: 600; }
+    .clear-btn { background: none; border: none; color: var(--text-secondary); font-size: 12px; cursor: pointer; }
+    .history-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 13px;
+      border-radius: 12px;
+      background: rgba(9, 11, 16, 0.65);
+      border: 1px solid var(--glass-border);
+    }
+
+    .history-meta { overflow: hidden; }
+    .history-title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .history-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+    .badge-type {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.16);
+      color: #a5b4fc;
+      flex-shrink: 0;
+    }
+
+    footer {
+      margin-top: 10px;
+      padding: 16px 12px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+    }
+
+    footer strong {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .creator-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid rgba(0, 242, 254, 0.35);
+      color: #7ef9ff;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .creator-link:hover {
+      background: rgba(0, 242, 254, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      width: 100%;
+      max-width: 460px;
+      background: #131826;
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 22px;
+    }
+
+    .modal h3 { font-size: 17px; margin-bottom: 14px; }
+    .field-label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+
+    .modal input[type="text"] {
+      width: 100%;
+      background: #090b10;
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-secondary { background: rgba(255, 255, 255, 0.08); border: none; color: var(--text-primary); padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-primary { background: var(--accent); border: none; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo-badge">MV</div>
+        <div>
+          <h1>MediaVault</h1>
+          <span>Instagram, Facebook & TikTok Downloader</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="status-pill" id="serverStatusPill">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Checking...</span>
+        </div>
+        <button class="icon-btn" id="openSettingsBtn" aria-label="API Settings">⚙️</button>
+      </div>
+    </header>
+
+    <main class="card">
+      <div class="platforms-row">
+        <span class="platform-chip" id="chip-ig">Instagram</span>
+        <span class="platform-chip" id="chip-fb">Facebook</span>
+        <span class="platform-chip" id="chip-tt">TikTok</span>
+      </div>
+
+      <div class="input-group">
+        <input
+          type="url"
+          id="urlInput"
+          class="url-input"
+          placeholder="Paste Instagram, Facebook, or TikTok link..."
+          autocomplete="off"
+        />
+        <button type="button" class="paste-btn" id="pasteBtn">Paste</button>
+      </div>
+
+      <div class="format-tabs">
+        <button type="button" class="tab-btn active" data-type="video">🎬 Video (MP4)</button>
+        <button type="button" class="tab-btn" data-type="audio">🎵 Audio (MP3)</button>
+      </div>
+
+      <button type="button" class="download-btn" id="downloadBtn">
+        <span>Download Video</span>
+      </button>
+
+      <div class="status-box" id="statusBox"></div>
+    </main>
+
+    <section class="card">
+      <div class="history-header">
+        <h2>Recent Downloads</h2>
+        <button type="button" class="clear-btn" id="clearHistoryBtn">Clear</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <p style="font-size: 13px; color: var(--text-secondary);">No downloads yet.</p>
+      </div>
+    </section>
+
+    <footer>
+      <div>Created By <strong>Kadir</strong></div>
+      <a class="creator-link" href="https://www.tiktok.com/@kadirofficial007" target="_blank" rel="noopener noreferrer">
+        🎵 Follow on TikTok: @kadirofficial007
+      </a>
+    </footer>
+  </div>
+
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal">
+      <h3>Backend Configuration</h3>
+      <label class="field-label" for="apiEndpointInput">Backend API Endpoint URL</label>
+      <input
+        type="text"
+        id="apiEndpointInput"
+        placeholder="https://universal-social-media-downloader.onrender.com/api/download"
+      />
+
+      <div class="toggle-row">
+        <div>
+          <div style="font-size: 13px; font-weight: 600;">Demo Mode</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">Simulate downloads without calling backend</div>
+        </div>
+        <input type="checkbox" id="demoModeCheckbox" style="width: 18px; height: 18px; accent-color: #6366f1;" />
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="resetDefaultBtn">Reset Default</button>
+        <button type="button" class="btn-secondary" id="closeSettingsBtn">Cancel</button>
+        <button type="button" class="btn-primary" id="saveSettingsBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_API_URL = "https://universal-social-media-downloader.onrender.com/api/download";
+
+    let apiEndpoint = localStorage.getItem("mv_api_endpoint") || DEFAULT_API_URL;
+    let demoMode = localStorage.getItem("mv_demo_mode") === "true";
+    let selectedType = "video";
+    let downloadHistory = JSON.parse(localStorage.getItem("mv_history") || "[]");
+
+    const urlInput = document.getElementById("urlInput");
+    const pasteBtn = document.getElementById("pasteBtn");
+    const tabBtns = document.querySelectorAll(".tab-btn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const statusBox = document.getElementById("statusBox");
+    const historyList = document.getElementById("historyList");
+    const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+    const statusDot = document.getElementById("statusDot");
+    const statusText = document.getElementById("statusText");
+
+    const settingsModal = document.getElementById("settingsModal");
+    const openSettingsBtn = document.getElementById("openSettingsBtn");
+    const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+    const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+    const resetDefaultBtn = document.getElementById("resetDefaultBtn");
+    const apiEndpointInput = document.getElementById("apiEndpointInput");
+    const demoModeCheckbox = document.getElementById("demoModeCheckbox");
+
+    const chips = {
+      ig: document.getElementById("chip-ig"),
+      fb: document.getElementById("chip-fb"),
+      tt: document.getElementById("chip-tt")
+    };
+
+    function isYouTubeUrl(url) {
+      const lower = url.toLowerCase();
+      return lower.includes("youtube.com") || lower.includes("youtu.be");
+    }
+
+    function detectPlatform(url) {
+      Object.values(chips).forEach(function(c) { c.className = "platform-chip"; });
+      const lower = url.toLowerCase();
+      if (lower.includes("instagram.com")) {
+        chips.ig.classList.add("active-ig");
+        return "Instagram";
+      }
+      if (lower.includes("facebook.com") || lower.includes("fb.watch")) {
+        chips.fb.classList.add("active-fb");
+        return "Facebook";
+      }
+      if (lower.includes("tiktok.com")) {
+        chips.tt.classList.add("active-tt");
+        return "TikTok";
+      }
+      return "Social Media";
+    }
+
+    function showStatus(message, type, downloadLink) {
+      statusBox.className = "status-box show " + (type || "info");
+      if (downloadLink) {
+        statusBox.innerHTML = '<div>' + message + '</div>' +
+          '<a class="direct-link-btn" href="' + downloadLink + '" target="_blank">Tap Here to Save File</a>';
+      } else {
+        statusBox.textContent = message;
+      }
+    }
+
+    function setLoading(isLoading, labelText) {
+      downloadBtn.disabled = isLoading;
+      if (isLoading) {
+        downloadBtn.innerHTML = '<div class="spinner"></div><span>' + (labelText || "Processing...") + '</span>';
+      } else {
+        downloadBtn.innerHTML = '<span>' + (selectedType === "video" ? "Download Video" : "Download Audio") + '</span>';
+      }
+    }
+
+    async function pingServer() {
+      if (demoMode) {
+        statusDot.className = "status-dot demo";
+        statusText.textContent = "Demo Mode";
+        return;
+      }
+      statusDot.className = "status-dot";
+      statusText.textContent = "Waking...";
+      try {
+        const baseUrl = apiEndpoint.replace(/\/api\/download\/?$/, "");
+        const res = await fetch(baseUrl, { method: "GET" });
+        if (res.ok) {
+          statusDot.className = "status-dot online";
+          statusText.textContent = "Server Ready";
+        } else {
+          statusText.textContent = "Standby";
+        }
+      } catch (e) {
+        statusText.textContent = "Offline/Waking";
+      }
+    }
+
+    function renderHistory() {
+      if (!downloadHistory.length) {
+        historyList.innerHTML = '<p style="font-size: 13px; color: var(--text-secondary);">No downloads yet.</p>';
+        return;
+      }
+      historyList.innerHTML = downloadHistory
+        .map(function(item) {
+          return '<div class="history-item">' +
+            '<div class="history-meta">' +
+              '<div class="history-title">' + item.title + '</div>' +
+              '<div class="history-sub">' + item.platform + ' • ' + item.time + '</div>' +
+            '</div>' +
+            '<span class="badge-type">' + item.type.toUpperCase() + '</span>' +
+          '</div>';
+        })
+        .join("");
+    }
+
+    function addHistory(title, platform, type) {
+      downloadHistory.unshift({
+        title: title,
+        platform: platform,
+        type: type,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      });
+      downloadHistory = downloadHistory.slice(0, 15);
+      localStorage.setItem("mv_history", JSON.stringify(downloadHistory));
+      renderHistory();
+    }
+
+    urlInput.addEventListener("input", function() {
+      if (isYouTubeUrl(urlInput.value)) {
+        Object.values(chips).forEach(function(c) { c.className = "platform-chip"; });
+        showStatus("YouTube links are disabled. Please paste an Instagram, Facebook, or TikTok link.", "error");
+        return;
+      }
+      statusBox.classList.remove("show");
+      detectPlatform(urlInput.value);
+    });
+
+    pasteBtn.addEventListener("click", async function() {
+      try {
+        const text = await navigator.clipboard.readText();
+        urlInput.value = text;
+        if (isYouTubeUrl(text)) {
+          showStatus("YouTube links are disabled. Please paste an Instagram, Facebook, or TikTok link.", "error");
+          return;
+        }
+        detectPlatform(text);
+      } catch (e) {
+        showStatus("Clipboard blocked. Tap the input box and paste manually.", "error");
+      }
+    });
+
+    tabBtns.forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        tabBtns.forEach(function(b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+        selectedType = btn.dataset.type;
+        setLoading(false);
+      });
+    });
+
+    downloadBtn.addEventListener("click", async function() {
+      const url = urlInput.value.trim();
+      if (!url) {
+        showStatus("Please paste a valid Instagram, Facebook, or TikTok link first.", "error");
+        return;
+      }
+
+      if (isYouTubeUrl(url)) {
+        showStatus("YouTube downloads are not supported. Use Instagram, Facebook, or TikTok links.", "error");
+        return;
+      }
+
+      const platform = detectPlatform(url);
+
+      if (demoMode) {
+        setLoading(true, "Simulating...");
+        setTimeout(function() {
+          setLoading(false);
+          const ext = selectedType === "audio" ? "mp3" : "mp4";
+          const fakeName = platform + "_Sample_" + Date.now() + "." + ext;
+          addHistory(fakeName, platform, selectedType);
+          showStatus("Demo complete: " + fakeName, "success");
+        }, 1200);
+        return;
+      }
+
+      setLoading(true, "Fetching media...");
+      const wakeTimer = setTimeout(function() {
+        showStatus("Waking up Render server (~45-60s on first request). Keep app open...", "info");
+      }, 4500);
+
+      try {
+        const response = await fetch(apiEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: url, type: selectedType })
+        });
+
+        clearTimeout(wakeTimer);
+        const data = await response.json();
+
+        if (!response.ok || !data.download_url) {
+          throw new Error(data.error || "Server error (" + response.status + ")");
+        }
+
+        statusDot.className = "status-dot online";
+        statusText.textContent = "Server Ready";
+
+        addHistory(data.filename, platform, selectedType);
+        showStatus("Ready: " + data.filename, "success", data.download_url);
+
+        window.location.href = data.download_url;
+      } catch (err) {
+        clearTimeout(wakeTimer);
+        showStatus("Error: " + err.message, "error");
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    clearHistoryBtn.addEventListener("click", function() {
+      downloadHistory = [];
+      localStorage.removeItem("mv_history");
+      renderHistory();
+    });
+
+    openSettingsBtn.addEventListener("click", function() {
+      apiEndpointInput.value = apiEndpoint;
+      demoModeCheckbox.checked = demoMode;
+      settingsModal.classList.add("open");
+    });
+
+    closeSettingsBtn.addEventListener("click", function() {
+      settingsModal.classList.remove("open");
+    });
+
+    resetDefaultBtn.addEventListener("click", function() {
+      apiEndpointInput.value = DEFAULT_API_URL;
+      demoModeCheckbox.checked = false;
+    });
+
+    saveSettingsBtn.addEventListener("click", function() {
+      const val = apiEndpointInput.value.trim();
+      apiEndpoint = val || DEFAULT_API_URL;
+      demoMode = demoModeCheckbox.checked;
+      localStorage.setItem("mv_api_endpoint", apiEndpoint);
+      localStorage.setItem("mv_demo_mode", String(demoMode));
+      settingsModal.classList.remove("open");
+      pingServer();
+      showStatus("Settings saved.", "success");
+    });
+
+    renderHistory();
+    pingServer();
+  </script>
+</body>
+</html>
